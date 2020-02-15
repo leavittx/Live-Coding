@@ -47,19 +47,31 @@ void main(void)
   float d = 2.5;
   
   
-  //#define ITERS 13
-  int ITERS = 5;//int(10.0*(1.0+sin(fGlobalTime)));
+  int ITERS = 5;
+  //int ITERS = int(10.0*(1.0+sin(fGlobalTime)));
   for (int i = 0; i <= ITERS; i++)
   {
-    vec3 p = vec3(0, 0, 5.) + normalize(vec3(p, -1.)) * d;
+    vec3 p = vec3(0, 0, 5.0) + normalize(vec3(p, -1.0)) * d;
     float rz = map(p);
     float f = clamp((rz - map(p + .1)) * 0.5, -0.1, 1.0);
     vec3 l = vec3(0.1, 0.3, 0.4) + vec3(5.0, 2.5, 3.0) * f;
     cl = cl*l + smoothstep(2.5, 0.0, rz) * 0.7 * l;
     d += min(rz, 1.0);
   }
+
+  // Tonemapping and color grading
+  vec3 color = cl;
+
+  color = pow(color, vec3(1.5));
+  color = color / (1.0 + color);
+  color = pow(color, vec3(1.0 / 1.5));
+  color = mix(color, color * color * (3.0 - 2.0 * color), vec3(1.0));
+  color = pow(color, vec3(1.3, 1.20, 1.0));
+  color = clamp(color * 1.01, 0.0, 1.0);
+  color = pow(color, vec3(0.7 / 2.2));
+
+  out_color.rgb = mix(cl, color, bass() / 2000.0);
   
-  out_color.rgb = cl;
   return;
   
   
