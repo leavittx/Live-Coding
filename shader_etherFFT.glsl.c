@@ -40,27 +40,32 @@ float map(vec3 p)
   return length(p + vec3(sin(t*0.7))) * log(length(p) + 1.0) + 
          sin(q.x + sin(q.z + sin(q.y))) * 0.5 - 1.0;
 }
+
+float map2(vec3 p)
+{
+    return length(p) - 1.0;
+}
 void main(void)
 {
   vec2 p = gl_FragCoord.xy / v2Resolution.y - vec2(.9, .5);
-  vec3 cl = vec3(0.);
-  float d = 2.5;
+  vec3 col = vec3(0.);
+  float d = 2.5; // Camera distance
   
-  
-  int ITERS = 5;
   //int ITERS = int(10.0*(1.0+sin(fGlobalTime)));
-  for (int i = 0; i <= ITERS; i++)
+
+  int ITERS = 5;
+  for (int i = 0; i <= ITERS; ++i)
   {
     vec3 p = vec3(0, 0, 5.0) + normalize(vec3(p, -1.0)) * d;
-    float rz = map(p);
-    float f = clamp((rz - map(p + .1)) * 0.5, -0.1, 1.0);
+    float dist = map(p);
+    float f = clamp((dist - map(p + .1)) * 0.5, -0.1, 1.0);
     vec3 l = vec3(0.1, 0.3, 0.4) + vec3(5.0, 2.5, 3.0) * f;
-    cl = cl*l + smoothstep(2.5, 0.0, rz) * 0.7 * l;
-    d += min(rz, 1.0);
+    col = col*l + smoothstep(2.5, 0.0, dist) * 0.7 * l;
+    d += min(dist, 1.0);
   }
 
   // Tonemapping and color grading
-  vec3 color = cl;
+  vec3 color = col;
 
   color = pow(color, vec3(1.5));
   color = color / (1.0 + color);
@@ -70,7 +75,7 @@ void main(void)
   color = clamp(color * 1.01, 0.0, 1.0);
   color = pow(color, vec3(0.7 / 2.2));
 
-  out_color.rgb = mix(cl, color, bass() / 2000.0);
+  out_color.rgb = mix(col, color, bass() / 2000.0);
   
   return;
   
